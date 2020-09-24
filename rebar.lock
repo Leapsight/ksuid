@@ -1,0 +1,4 @@
+[{<<"base62">>,
+  {git,"https://gitlab.com/leapsight/base62.git",
+       {ref,"6e1c622c2e9bba51fadba44fa050d4b4ae706890"}},
+  0}].

@@ -1,14 +1,16 @@
-{application, ksuid,
- [{description, "An OTP library"},
-  {vsn, "0.1.0"},
-  {registered, []},
-  {applications,
-   [kernel,
-    stdlib
-   ]},
-  {env,[]},
-  {modules, [ksuid]},
-
-  {licenses, ["Apache 2.0"]},
-  {links, []}
- ]}.
+{application, ksuid,[
+    {description, "An OTP library"},
+    {vsn, "0.1.0"},
+    {registered, []},
+    {applications, [
+        kernel,
+        stdlib,
+        sasl,
+        crypto,
+        base62
+    ]},
+    {env, []},
+    {modules, [ksuid]},
+    {licenses, ["Apache 2.0"]},
+    {links, []}
+]}.
