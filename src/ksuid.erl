@@ -31,7 +31,7 @@
 -define(LEN, 160).
 -define(ENCODED_LEN, 27).
 
-%%  Timestamp epoch is adjusted to March 5th, 2014
+%%  Timestamp epoch is adjusted to Tuesday, 13 May 2014 16:53:20
 -define(SECS_EPOCH, 1400000000).
 -define(MILLIS_EPOCH, ?SECS_EPOCH * 1000).
 -define(MICROS_EPOCH, ?MILLIS_EPOCH * 1000).
@@ -43,6 +43,7 @@
 
 -export([gen_id/0]).
 -export([gen_id/1]).
+-export([min/0]).
 -export([local_time/1]).
 -export([local_time/2]).
 
@@ -82,6 +83,16 @@ gen_id(Unit) ->
 
 
 %% -----------------------------------------------------------------------------
+%% @doc The minimum posible id e.g. Tuesday, 13 May 2014 16:53:20
+%% @end
+%% -----------------------------------------------------------------------------
+-spec min() -> t().
+
+min() ->
+    <<"000000000000000000000000000">>.
+
+
+%% -----------------------------------------------------------------------------
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
@@ -116,6 +127,11 @@ local_time(Base62, millisecond) ->
 
 
 %% @private
+do_gen_id(min) ->
+    Timestamp = 0,
+    <<Id:?LEN/integer>> = append_payload(<<Timestamp:32/integer>>),
+    encode(Id);
+
 do_gen_id(second) ->
     Timestamp = erlang:system_time(second) - ?SECS_EPOCH,
     <<Id:?LEN/integer>> = append_payload(<<Timestamp:32/integer>>),
