@@ -21,8 +21,31 @@
 %% @doc An implementation of K-Sortable Unique Identifiers as documented in
 %% https://segment.com/blog/a-brief-history-of-the-uuid/.
 %%
-%% The string representation is fixed at 27-characters encoded using a base62
-%% encoding that also sorts lexicographically.
+%% KSUID is an abbreviation for K-Sortable Unique IDentifier. It combines the
+%% simplicity and security of UUID Version 4 with the lexicographic k-ordering
+%% properties of Boundary's Flake.
+%%
+%% KSUIDs are larger than UUIDs and Flake IDs, weighing in at 160 bits. They
+%% consist of a 32-bit timestamp and a 128-bit randomly generated payload. The
+%% uniqueness property does not depend on any host-identifiable information or
+%% the wall clock. Instead it depends on the improbability of random collisions
+%% in such a large number space, just like UUID Version 4. To reduce
+%% implementation complexity, the 122-bits of UUID Version 4 are rounded up to
+%% 128-bits, making it 64-times more collision resistant as a bonus, even when
+%% the additional 32-bit timestamp is not taken into account.
+%%
+%% The default timestamp provides 1-second resolution. If a higher resolution
+%% timestamp is desired, payload bits can be traded for more timestamp bits.
+%%
+%% A “custom” epoch is used that ensures >100 years of useful life. The epoch
+%% offset (14e8) was also chosen to be easily remembered and quickly singled
+%% out out by human eyes.
+%%
+%% KSUID provides two fixed-length encodings: a 20-byte binary encoding and a
+%% 27-character base62 encoding. The lexicographic ordering property is
+%% provided by encoding the timestamp using big endian byte ordering. The
+%% base62 encoding is tailored to map to the lexicographic ordering of
+%% characters in terms of their ASCII order.
 %% @end
 %% -----------------------------------------------------------------------------
 -module(ksuid).
@@ -38,8 +61,8 @@
 -define(NANOS_EPOCH, ?MICROS_EPOCH * 1000).
 
 -type t()           ::  binary().
--type time_unit()   ::  second | millisecond | microsecond | nanosecond.
-
+-type time_unit()   ::  second | millisecond.
+                        % | microsecond | nanosecond.
 
 -export([gen_id/0]).
 -export([gen_id/1]).
@@ -118,6 +141,7 @@ local_time(Base62, millisecond) ->
     Bin = base62:decode(Base62),
     <<Timestamp:64/integer, _/binary>> = <<Bin:?LEN/integer>>,
     calendar:system_time_to_local_time(Timestamp + ?MILLIS_EPOCH, millisecond).
+
 
 
 %% =============================================================================
