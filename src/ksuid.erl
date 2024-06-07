@@ -64,6 +64,9 @@
 -type time_unit()   ::  second | millisecond.
                         % | microsecond | nanosecond.
 
+-export_type([t/0]).
+-export_type([time_unit/0]).
+
 -export([gen_id/0]).
 -export([gen_id/1]).
 -export([min/0]).
