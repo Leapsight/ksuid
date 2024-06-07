@@ -57,8 +57,8 @@
 %%  Timestamp epoch is adjusted to Tuesday, 13 May 2014 16:53:20
 -define(SECS_EPOCH, 1400000000).
 -define(MILLIS_EPOCH, ?SECS_EPOCH * 1000).
--define(MICROS_EPOCH, ?MILLIS_EPOCH * 1000).
--define(NANOS_EPOCH, ?MICROS_EPOCH * 1000).
+%% -define(MICROS_EPOCH, ?MILLIS_EPOCH * 1000).
+%% -define(NANOS_EPOCH, ?MICROS_EPOCH * 1000).
 
 -type t()           ::  binary().
 -type time_unit()   ::  second | millisecond.
@@ -69,6 +69,7 @@
 -export([min/0]).
 -export([local_time/1]).
 -export([local_time/2]).
+-export([timestamp/2]).
 
 
 
@@ -132,15 +133,18 @@ local_time(Base62) ->
 -spec local_time(Base62 :: binary(), Unit :: erlang:time_unit()) ->
     erlang:datetime() | no_return().
 
-local_time(Base62, second) ->
-    Bin = base62:decode(Base62),
-    <<Timestamp:32/integer, _/binary>> = <<Bin:?LEN/integer>>,
-    calendar:system_time_to_local_time(Timestamp + ?SECS_EPOCH, second);
+local_time(Base62, Unit) ->
+    calendar:system_time_to_local_time(timestamp(Base62, Unit), Unit).
 
-local_time(Base62, millisecond) ->
-    Bin = base62:decode(Base62),
-    <<Timestamp:64/integer, _/binary>> = <<Bin:?LEN/integer>>,
-    calendar:system_time_to_local_time(Timestamp + ?MILLIS_EPOCH, millisecond).
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec timestamp(Base62 :: binary(), Unit :: erlang:time_unit()) ->
+    erlang:datetime() | no_return().
+
+timestamp(Base62, Unit) when Unit == second orelse Unit == millisecond ->
+    do_timestamp(base62:decode(Base62), Unit).
 
 
 
@@ -148,7 +152,13 @@ local_time(Base62, millisecond) ->
 %% PRIVATE
 %% =============================================================================
 
+do_timestamp(Bin, second) ->
+    <<Timestamp:32/integer, _/binary>> = <<Bin:?LEN/integer>>,
+    Timestamp + ?SECS_EPOCH;
 
+do_timestamp(Bin, millisecond) ->
+    <<Timestamp:64/integer, _/binary>> = <<Bin:?LEN/integer>>,
+    Timestamp +  ?MILLIS_EPOCH.
 
 %% @private
 do_gen_id(min) ->
@@ -185,3 +195,7 @@ encode(Id) ->
     list_to_binary(
         lists:flatten(string:pad(Base62, ?ENCODED_LEN, leading, $0))
     ).
+
+%% =============================================================================
+%% PRIVATE
+%% =============================================================================
